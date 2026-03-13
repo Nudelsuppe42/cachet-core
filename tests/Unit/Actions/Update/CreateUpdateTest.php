@@ -3,7 +3,9 @@
 use Cachet\Actions\Update\CreateUpdate;
 use Cachet\Data\Requests\IncidentUpdate\CreateIncidentUpdateRequestData;
 use Cachet\Data\Requests\ScheduleUpdate\CreateScheduleUpdateRequestData;
+use Cachet\Enums\ComponentStatusEnum;
 use Cachet\Enums\IncidentStatusEnum;
+use Cachet\Models\Component;
 use Cachet\Models\Incident;
 use Cachet\Models\Schedule;
 
@@ -37,6 +39,30 @@ it('an incident\'s computed latest status equals the new status', function () {
         ->message->toBe($data->message)
         ->and($incident->fresh())
         ->latestStatus->toEqual(IncidentStatusEnum::identified);
+});
+
+it('sets linked component status to operational when incident update status is fixed', function () {
+    $incident = Incident::factory()->create([
+        'status' => IncidentStatusEnum::investigating,
+    ]);
+
+    $component = Component::factory()->create([
+        'status' => ComponentStatusEnum::operational,
+    ]);
+
+    $incident->components()->attach($component->id, [
+        'component_status' => ComponentStatusEnum::major_outage,
+    ]);
+
+    $data = CreateIncidentUpdateRequestData::from([
+        'message' => 'This issue has been fixed.',
+        'status' => IncidentStatusEnum::fixed,
+    ]);
+
+    app(CreateUpdate::class)->handle($incident, $data);
+
+    expect($incident->components()->first()->pivot->component_status)
+        ->toEqual(ComponentStatusEnum::operational);
 });
 
 it('can create a schedule update', function () {

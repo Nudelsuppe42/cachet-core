@@ -47,6 +47,13 @@ class ComponentGroup extends Model
         'visible',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (ComponentGroup $componentGroup): void {
+            $componentGroup->components()->update(['component_group_id' => null]);
+        });
+    }
+
     /**
      * Get the components in the group.
      *
@@ -78,7 +85,8 @@ class ComponentGroup extends Model
     public function hasActiveIncident(): bool
     {
         return Incident::query()
-            ->whereIn('component_id', $this->components->pluck('id'))
+            ->unresolved()
+            ->whereHas('components', fn ($query) => $query->whereIn('components.id', $this->components->pluck('id')))
             ->exists();
     }
 

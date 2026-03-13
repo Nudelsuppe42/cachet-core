@@ -3,6 +3,10 @@
 namespace Cachet;
 
 use BladeUI\Icons\Factory;
+use Cachet\Commands\MakeUserCommand;
+use Cachet\Commands\SendBeaconCommand;
+use Cachet\Commands\VersionCommand;
+use Cachet\Database\Seeders\DatabaseSeeder;
 use Cachet\Listeners\SendWebhookListener;
 use Cachet\Listeners\WebhookCallEventListener;
 use Cachet\Models\Incident;
@@ -13,6 +17,7 @@ use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Dedoc\Scramble\Support\Generator\Server;
 use Dedoc\Scramble\Support\RouteInfo;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentColor;
@@ -82,7 +87,7 @@ class CachetCoreServiceProvider extends ServiceProvider
         ));
 
         FilamentColor::register([
-            'cachet' => Color::rgb('rgb(4, 193, 71)'),
+            'cachet' => Color::generateV3Palette('rgb(4, 193, 71)'),
         ]);
 
         $this->configureScramble();
@@ -159,6 +164,7 @@ class CachetCoreServiceProvider extends ServiceProvider
      */
     private function registerBladeComponents(): void
     {
+        view()->share('appSettings', app(AppSettings::class));
         Blade::componentNamespace('Cachet\\View\\Components', 'cachet');
 
         $this->callAfterResolving(Factory::class, function (Factory $factory) {
@@ -176,9 +182,9 @@ class CachetCoreServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                Commands\MakeUserCommand::class,
-                Commands\SendBeaconCommand::class,
-                Commands\VersionCommand::class,
+                MakeUserCommand::class,
+                SendBeaconCommand::class,
+                VersionCommand::class,
             ]);
 
             AboutCommand::add('Cachet', fn () => [
@@ -206,7 +212,7 @@ class CachetCoreServiceProvider extends ServiceProvider
             $schedule->command('cachet:beacon')->daily();
 
             $schedule->command('db:seed', [
-                '--class' => \Cachet\Database\Seeders\DatabaseSeeder::class,
+                '--class' => DatabaseSeeder::class,
                 '--force',
             ])->everyThirtyMinutes()->when($demoMode);
         });
@@ -225,6 +231,7 @@ class CachetCoreServiceProvider extends ServiceProvider
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->info->description = 'API documentation for Cachet, the open-source, self-hosted status page system.';
 
+                $openApi->addServer(Server::make('https://v3.cachethq.io/api')->setDescription('The Cachet v3 demo server.'));
                 $openApi->secure(SecurityScheme::http('bearer'));
             })
             ->withOperationTransformers(function (Operation $operation, RouteInfo $routeInfo) {

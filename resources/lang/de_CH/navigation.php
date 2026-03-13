@@ -6,6 +6,7 @@ return [
         'items' => [
             'manage_cachet' => 'Cachet',
             'manage_customization' => 'Anpassung',
+            'manage_localization' => 'Sprache',
             'manage_theme' => 'Darstellung',
             'manage_api_keys' => 'API Schlüssel',
             'manage_webhooks' => 'Webhooks',
@@ -25,6 +26,11 @@ return [
             'documentation' => 'Dokumentation',
             'discord' => 'Discord beitreten',
             'sponsor' => 'Cachet unterstützen',
+        ],
+    ],
+    'user' => [
+        'items' => [
+            'edit_profile' => 'Profil bearbeiten',
         ],
     ],
 ];

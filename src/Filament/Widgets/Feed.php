@@ -18,7 +18,7 @@ class Feed extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static string $view = 'cachet::filament.widgets.feed';
+    protected string $view = 'cachet::filament.widgets.feed';
 
     protected static ?int $sort = 10;
 
@@ -63,7 +63,7 @@ class Feed extends Widget
         try {
             $response = Http::get($uri);
 
-            $xml = simplexml_load_string($response->getBody());
+            $xml = simplexml_load_string($response->body());
 
             $posts = [];
 

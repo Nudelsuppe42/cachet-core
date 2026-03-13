@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -30,10 +31,10 @@ use Illuminate\Support\Str;
  * @property Collection<int, Update> $updates
  *
  * @method static ScheduleFactory factory($count = null, $state = [])
- * @method static \Cachet\QueryBuilders\ScheduleBuilder incomplete()
- * @method static \Cachet\QueryBuilders\ScheduleBuilder inProgress()
- * @method static \Cachet\QueryBuilders\ScheduleBuilder inTheFuture()
- * @method static \Cachet\QueryBuilders\ScheduleBuilder inThePast()
+ * @method static ScheduleBuilder incomplete()
+ * @method static ScheduleBuilder inProgress()
+ * @method static ScheduleBuilder inTheFuture()
+ * @method static ScheduleBuilder inThePast()
  */
 class Schedule extends Model
 {
@@ -80,14 +81,26 @@ class Schedule extends Model
     /**
      * Get the components affected by this schedule.
      *
-     * @return BelongsToMany<Component, $this>
+     * @return BelongsToMany<Component, $this, ScheduleComponent>
      */
     public function components(): BelongsToMany
     {
         return $this->belongsToMany(
             Component::class,
             'schedule_components',
-        );
+        )->using(ScheduleComponent::class)
+            ->withPivot(['component_status'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the schedule components pivot entries.
+     *
+     * @return HasMany<ScheduleComponent, $this>
+     */
+    public function scheduleComponents(): HasMany
+    {
+        return $this->hasMany(ScheduleComponent::class);
     }
 
     /**
@@ -112,7 +125,7 @@ class Schedule extends Model
      * Create a new Eloquent query builder for the model.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
-     * @return \Cachet\QueryBuilders\ScheduleBuilder
+     * @return ScheduleBuilder
      */
     public function newEloquentBuilder($query)
     {

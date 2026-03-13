@@ -4,7 +4,7 @@
 
 @use('\Cachet\Enums\MetricViewEnum')
 
-<div x-data="chart">
+<div x-data="chart_{{ $metric->id }}">
     <div class="flex flex-col gap-2">
         <div class="flex items-center gap-1.5">
             <div class="font-semibold leading-6">{{ $metric->name }}</div>
@@ -13,7 +13,7 @@
                 <button x-ref="anchor" x-popover:button>
                     <x-heroicon-o-question-mark-circle class="size-4 text-zinc-500 dark:text-zinc-300" />
                 </button>
-                <div x-popover:panel x-cloak x-transition.opacity x-anchor.right.offset.8="$refs.anchor" class="rounded bg-white px-2 py-1 text-xs font-medium text-zinc-800 drop-shadow dark:text-zinc-800">
+                <div x-popover:panel x-cloak x-transition.opacity x-anchor.right.offset.8="$refs.anchor" class="rounded-sm bg-white px-2 py-1 text-xs font-medium text-zinc-800 drop-shadow-sm dark:text-zinc-800">
                     <span class="pointer-events-none absolute -left-1 top-1.5 size-4 rotate-45 bg-white"></span>
                     <p class="relative">{{ $metric->description }}</p>
                 </div>
@@ -26,13 +26,13 @@
                 @endforeach
             </select>
         </div>
-        <canvas x-ref="canvas" height="380" class="text-gray rounded-md bg-white p-3 shadow-sm ring-1 ring-gray-900/5 dark:bg-zinc-800 dark:text-white dark:ring-gray-100/10"></canvas>
+        <canvas x-ref="canvas" height="380" class="text-gray rounded-md bg-white p-3 shadow-xs ring-1 ring-gray-900/5 dark:bg-zinc-800 dark:text-white dark:ring-gray-100/10"></canvas>
     </div>
 </div>
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('chart', () => ({
+        Alpine.data('chart_{{ $metric->id }}', () => ({
             metric: {{ Js::from($metric) }},
             period: {{ Js::from($metric->default_view) }},
             points: [[], [], [], []],

@@ -9,7 +9,7 @@ use Cachet\Enums\ResourceVisibilityEnum;
 use Cachet\Events\Incidents\IncidentCreated;
 use Cachet\Events\Incidents\IncidentDeleted;
 use Cachet\Events\Incidents\IncidentUpdated;
-use Cachet\Filament\Resources\IncidentResource;
+use Cachet\Filament\Resources\Incidents\IncidentResource;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -73,7 +73,7 @@ class Incident extends Model
         'occurred_at' => 'datetime',
     ];
 
-    /** @var array<string, string> */
+    /** @var array<string, class-string> */
     protected $dispatchesEvents = [
         'created' => IncidentCreated::class,
         'deleted' => IncidentDeleted::class,
@@ -189,9 +189,7 @@ class Incident extends Model
     protected function latestStatus(): Attribute
     {
         return Attribute::make(
-            get: function ($value) {
-                return $this->updates()->latest()->first()->status ?? $this->status;
-            }
+            get: fn () => $this->updates()->latest()->first()->status ?? $this->status
         );
     }
 
